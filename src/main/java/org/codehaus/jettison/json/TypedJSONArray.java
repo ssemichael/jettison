@@ -74,27 +74,27 @@ import java.util.Map;
  * @author JSON.org
  * @version 2
  */
-public class JSONArray implements Serializable, Iterable {
+public class TypedJSONArray<T> implements Serializable, Iterable<T> {
 
 
     /**
      * The arrayList where the JSONArray's properties are kept.
      */
-    private ArrayList myArrayList;
+    private ArrayList<T> myArrayList;
 
 
     /**
      * Construct an empty JSONArray.
      */
-    public JSONArray() {
-        this.myArrayList = new ArrayList();
+    public TypedJSONArray() {
+        this.myArrayList = new ArrayList<T>();
     }
     
     /**
      * Construct an empty JSONArray with a given capacity.
      */
-    public JSONArray(int capacity) {
-        this.myArrayList = new ArrayList(capacity);
+    public TypedJSONArray(int capacity) {
+        this.myArrayList = new ArrayList<T>(capacity);
     }
 
     /**
@@ -102,7 +102,7 @@ public class JSONArray implements Serializable, Iterable {
      * @param x A JSONTokener
      * @throws JSONException If there is a syntax error.
      */
-    public JSONArray(JSONTokener x) throws JSONException {
+    public TypedJSONArray(JSONTokener x) throws JSONException {
         this();
         if (x.nextClean() != '[') {
             throw x.syntaxError("A JSONArray text must start with '['");
@@ -126,7 +126,7 @@ public class JSONArray implements Serializable, Iterable {
                 this.myArrayList.add(null);
             } else {
                 x.back();
-                this.myArrayList.add(x.nextValue());
+                this.myArrayList.add((T)x.nextValue());
             }
             switch (x.nextClean()) {
             case ';':
@@ -155,32 +155,14 @@ public class JSONArray implements Serializable, Iterable {
      *  and ends with <code>]</code>&nbsp;<small>(right bracket)</small>.
      *  @throws JSONException If there is a syntax error.
      */
-    public JSONArray(String string) throws JSONException {
+    public TypedJSONArray(String string) throws JSONException {
         this(new JSONTokener(string));
     }
 
 
-    /**
-     * Construct a JSONArray from a Collection.
-     * @param collection     A Collection.
-     */
-    public JSONArray(Collection collection) {
-        this.myArrayList = (collection == null) ?
-                new ArrayList() :
-                new ArrayList(collection);
-        // ensure a pure hierarchy of JSONObjects and JSONArrays
-        for (ListIterator iter = myArrayList.listIterator(); iter.hasNext();) {
-             Object e = iter.next();
-             if (e instanceof Collection) {
-                 iter.set(new JSONArray((Collection) e));
-             }
-             if (e instanceof Map) {
-                 iter.set(new JSONObject((Map) e));
-             }
-        }        
-    }
+   
     
-	public Iterator iterator() {
+	public Iterator<T> iterator() {
 		return this.myArrayList.iterator();
 	}
 
@@ -557,23 +539,11 @@ public class JSONArray implements Serializable, Iterable {
      * @param value A boolean value.
      * @return this.
      */
-    public JSONArray put(boolean value) {
+    public TypedJSONArray<T> put(boolean value) {
         put(value ? Boolean.TRUE : Boolean.FALSE);
         return this;
     }
 
-
-    /**
-     * Put a value in the JSONArray, where the value will be a
-     * JSONArray which is produced from a Collection.
-     * @param value     A Collection value.
-     * @return          this.
-     */
-    public JSONArray put(Collection value) {
-        put(new JSONArray(value));
-        return this;
-    }
-    
 
     /**
      * Append a double value. This increases the array's length by one.
@@ -582,187 +552,22 @@ public class JSONArray implements Serializable, Iterable {
      * @throws JSONException if the value is not finite.
      * @return this.
      */
-    public JSONArray put(double value) throws JSONException {
-        Double d = new Double(value);
-        JSONObject.testValidity(d);
-        put(d);
-        return this;
-    }
-
-
-    /**
-     * Append an int value. This increases the array's length by one.
-     *
-     * @param value An int value.
-     * @return this.
-     */
-    public JSONArray put(int value) {
-        put(Integer.valueOf(value));
-        return this;
-    }
-
-
-    /**
-     * Append an long value. This increases the array's length by one.
-     *
-     * @param value A long value.
-     * @return this.
-     */
-    public JSONArray put(long value) {
-        put(new Long(value));
-        return this;
-    }
-
-
-    /**
-     * Put a value in the JSONArray, where the value will be a
-     * JSONObject which is produced from a Map.
-     * @param value     A Map value.
-     * @return          this.
-     */
-    public JSONArray put(Map value) {
-        put(new JSONObject(value));
-        return this;
-    }
-    
-    
-    /**
-     * Append an object value. This increases the array's length by one.
-     * @param value An object value.  The value should be a
-     *  Boolean, Double, Integer, JSONArray, JSONObject, Long, or String, or the
-     *  JSONObject.NULL object.
-     * @return this.
-     */
-    public JSONArray put(Object value) {
+    public TypedJSONArray<T> put(T value) throws JSONException {
+        JSONObject.testValidity(value);
         this.myArrayList.add(value);
         return this;
     }
+
+
+   
+
     
-    public JSONArray remove(Object value) {
+    public TypedJSONArray<T> remove(T value) {
         this.myArrayList.remove(value);
         return this;
     }
-
-
-    /**
-     * Put or replace a boolean value in the JSONArray. If the index is greater
-     * than the length of the JSONArray, then null elements will be added as
-     * necessary to pad it out.
-     * @param index The subscript.
-     * @param value A boolean value.
-     * @return this.
-     * @throws JSONException If the index is negative.
-     */
-    public JSONArray put(int index, boolean value) throws JSONException {
-        put(index, value ? Boolean.TRUE : Boolean.FALSE);
-        return this;
-    }
-
     
-    /**
-     * Put a value in the JSONArray, where the value will be a
-     * JSONArray which is produced from a Collection.
-     * @param index The subscript.
-     * @param value     A Collection value.
-     * @return          this.
-     * @throws JSONException If the index is negative or if the value is
-     * not finite.
-     */
-    public JSONArray put(int index, Collection value) throws JSONException {
-        put(index, new JSONArray(value));
-        return this;
-    }
-
-    
-    /**
-     * Put or replace a double value. If the index is greater than the length of
-     *  the JSONArray, then null elements will be added as necessary to pad
-     *  it out.
-     * @param index The subscript.
-     * @param value A double value.
-     * @return this.
-     * @throws JSONException If the index is negative or if the value is
-     * not finite.
-     */
-    public JSONArray put(int index, double value) throws JSONException {
-        put(index, new Double(value));
-        return this;
-    }
-
-
-    /**
-     * Put or replace an int value. If the index is greater than the length of
-     *  the JSONArray, then null elements will be added as necessary to pad
-     *  it out.
-     * @param index The subscript.
-     * @param value An int value.
-     * @return this.
-     * @throws JSONException If the index is negative.
-     */
-    public JSONArray put(int index, int value) throws JSONException {
-        put(index, Integer.valueOf(value));
-        return this;
-    }
-
-
-    /**
-     * Put or replace a long value. If the index is greater than the length of
-     *  the JSONArray, then null elements will be added as necessary to pad
-     *  it out.
-     * @param index The subscript.
-     * @param value A long value.
-     * @return this.
-     * @throws JSONException If the index is negative.
-     */
-    public JSONArray put(int index, long value) throws JSONException {
-        put(index, new Long(value));
-        return this;
-    }
-
-
-    /**
-     * Put a value in the JSONArray, where the value will be a
-     * JSONObject which is produced from a Map.
-     * @param index The subscript.
-     * @param value     The Map value.
-     * @return          this.
-     * @throws JSONException If the index is negative or if the the value is
-     *  an invalid number.
-     */
-    public JSONArray put(int index, Map value) throws JSONException {
-        put(index, new JSONObject(value));
-        return this;
-    }
-    
-    
-    /**
-     * Put or replace an object value in the JSONArray. If the index is greater
-     *  than the length of the JSONArray, then null elements will be added as
-     *  necessary to pad it out.
-     * @param index The subscript.
-     * @param value The value to put into the array. The value should be a
-     *  Boolean, Double, Integer, JSONArray, JSONObject, Long, or String, or the
-     *  JSONObject.NULL object.
-     * @return this.
-     * @throws JSONException If the index is negative or if the the value is
-     *  an invalid number.
-     */
-    public JSONArray put(int index, Object value) throws JSONException {
-        JSONObject.testValidity(value);
-        if (index < 0) {
-            throw new JSONException("JSONArray[" + index + "] not found.");
-        }
-        if (index < length()) {
-            this.myArrayList.set(index, value);
-        } else {
-            while (index != length()) {
-                put(JSONObject.NULL);
-            }
-            put(value);
-        }
-        return this;
-    }
-
+ 
 
     /**
      * Produce a JSONObject by combining a JSONArray of names with the values
@@ -871,7 +676,7 @@ public class JSONArray implements Serializable, Iterable {
     @Override
     public boolean equals(Object obj) {
     	if (obj instanceof JSONArray) {
-    		return myArrayList.equals(((JSONArray)obj).myArrayList);
+    		return myArrayList.equals(((TypedJSONArray<T>)obj).myArrayList);
     	} else {
     		return false;
     	}

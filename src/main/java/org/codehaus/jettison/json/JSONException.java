@@ -20,7 +20,7 @@ package org.codehaus.jettison.json;
  * @author JSON.org
  * @version 2
  */
-public class JSONException extends Exception {
+public class JSONException extends RuntimeException {
     private Throwable cause;
     private int line = -1;
     private int column = -1;
