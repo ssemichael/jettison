@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.codehaus.jettison.JSONSequenceTooLargeException;
 
@@ -573,6 +575,9 @@ public class JSONObject implements Serializable {
         return this.myHashMap.keySet().iterator();
     }
 
+	public Set<Entry<String, Object>> entrySet() {
+		return this.myHashMap.entrySet();
+	}
 
     /**
      * Get the number of keys stored in the JSONObject.
